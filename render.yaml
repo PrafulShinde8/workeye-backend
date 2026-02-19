@@ -1,0 +1,68 @@
+# Render Blueprint Configuration
+# This file configures your Work-Eye backend on Render
+# Upload this to your repository root
+
+services:
+  # Backend Web Service
+  - type: web
+    name: work-eye-backend
+    runtime: python
+    plan: free  # Change to 'starter' or 'standard' for production
+    region: singapore  # Change to your preferred region
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    
+    # Environment Variables
+    envVars:
+      # CRITICAL: Python version for psycopg2-binary compatibility
+      - key: PYTHON_VERSION
+        value: 3.10.13
+      
+      # Database URL (synced from PostgreSQL service)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: work-eye-db
+          property: connectionString
+      
+      # Application settings
+      - key: FLASK_ENV
+        value: production
+      
+      - key: FLASK_DEBUG
+        value: false
+      
+      # Frontend URL for CORS
+      - key: FRONTEND_URL
+        value: https://frontend-8x7e.onrender.com
+      
+      - key: ALLOWED_ORIGINS
+        value: https://frontend-8x7e.onrender.com,http://localhost:3000
+      
+      # Logging
+      - key: LOG_LEVEL
+        value: INFO
+      
+      # Worker settings
+      - key: WEB_CONCURRENCY
+        value: 2
+      
+      - key: GUNICORN_TIMEOUT
+        value: 120
+      
+      # Feature flags
+      - key: ENABLE_ANALYTICS
+        value: true
+      
+      - key: ENABLE_SCREENSHOTS
+        value: true
+    
+    # Health check endpoint
+    healthCheckPath: /
+
+databases:
+  # PostgreSQL Database
+  - name: work-eye-db
+    plan: free  # Change to 'starter' or 'standard' for production
+    databaseName: work_eye_db
+    user: work_eye_db_user
+    region: singapore  # Same region as your backend
