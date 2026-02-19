@@ -55,7 +55,7 @@ CONFIG = {
     'log_file': None,
     
     # Backend configuration (EMBEDDED BY ADMIN DOWNLOAD)
-    'backend_url': 'http://127.0.0.1:10000',
+    'backend_url': 'https://workeye-backend.onrender.com',
     'tracker_token': 'MTk6aEZLWm1Xd1VOMVlRRjE3cmlNbmpPUE84R3BVSG9QVEh5M0pqOWlHQ18xbw==',  # Will be replaced by backend
     'company_id': 19,     # Will be replaced by backend
     
