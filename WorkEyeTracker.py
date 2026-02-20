@@ -55,7 +55,7 @@ CONFIG = {
     'log_file': None,
     
     # Backend configuration (EMBEDDED BY ADMIN DOWNLOAD)
-    'backend_url': 'https://workeye-backend.onrender.com',
+    'backend_url': 'https://workeye-backend.onrender.com',    
     'tracker_token': 'MTk6aEZLWm1Xd1VOMVlRRjE3cmlNbmpPUE84R3BVSG9QVEh5M0pqOWlHQ18xbw==',  # Will be replaced by backend
     'company_id': 19,     # Will be replaced by backend
     
@@ -1107,12 +1107,21 @@ class MinimalUI:
     def handle_punch_out(self):
         response = messagebox.askyesno(
             "Confirm Punch Out",
-            "Stop tracking and punch out?"
+             "Stop tracking and punch out?"
         )
         if not response:
-            return
-        
+          return
+
+        # ⭐ SEND FINAL STATUS BEFORE STOPPING THREADS
+        try:
+           upload_data()
+           heartbeat()
+           print("[FINAL] Sent final status")
+        except Exception as e:
+          print("[FINAL] Failed:", e)
+
         STATE.is_tracking = False
+
         if self.activity_thread:
             self.activity_thread.running = False
         if self.upload_thread:
