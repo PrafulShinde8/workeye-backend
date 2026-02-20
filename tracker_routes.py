@@ -1184,6 +1184,27 @@ import tempfile
 from functools import wraps
 from datetime import datetime, timezone
 import pytz
+import asyncio
+
+
+
+
+async def broadcast_ws_status(company_id, member_id, status):
+    try:
+        from websocket_server import manager
+        import asyncio
+
+        message = {
+            "type": "member_status_change",
+            "member_id": member_id,
+            "status": status,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        asyncio.create_task(manager.broadcast_to_company(company_id, message))
+
+    except Exception as e:
+        print("WS broadcast failed:", e)
 
 
 # Filesystem save configuration (optional)
@@ -1842,6 +1863,9 @@ def tracker_punch_in():
 
         # ✅ FIX 1: Emit real-time update so dashboard shows 'active' immediately
         emit_member_status_update(company_id, member_id, 'active')
+        
+        asyncio.create_task(broadcast_ws_status(company_id, member_id, 'active'))
+
 
         return jsonify({
             "success": True,
@@ -1942,6 +1966,7 @@ def tracker_punch_out():
         # This fixes the bug where dashboard/team page showed 'idle' after punch-out
         emit_member_status_update(company_id, member_id, 'offline')
 
+        asyncio.create_task(broadcast_ws_status(company_id, member_id, 'offline'))
         return jsonify({
             "success": True,
             "message": "Punched out successfully",
@@ -2160,6 +2185,9 @@ def tracker_upload():
 
         # ✅ FIX 6: Emit real-time status update so dashboard reflects idle/active instantly
         emit_member_status_update(company_id, member_id, member_status)
+
+        asyncio.create_task(broadcast_ws_status(company_id, member_id, member_status))
+
 
         print(f"✅ UPLOAD: Data uploaded for member {member_id}, status={member_status}")
 
